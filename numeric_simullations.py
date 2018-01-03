@@ -24,8 +24,10 @@ logAval = np.log10(np.abs(dfAval))
 dfComplex = [np.imag(np.sin(x0 + d * 1j)) / d for d in delta] - trueVal
 logComplex = np.log10(np.abs(dfComplex))
 
-print(logCentre)
-print(logAval)
-print(logComplex)
-plt.plot(range(deepDel), logCentre, 'bs', logAval, 'r--', logComplex, 'g^')
+
+plt.plot(logCentre, 'rs', label="Centre")
+plt.plot(logAval, 'b.', label="Aval")
+plt.plot(logComplex, 'g^', label="Complex")
+plt.ylabel('log(erreur relative)')
+plt.xlabel('-log(delta)')
 plt.show()

@@ -30,5 +30,9 @@ logAval = [float(log(abs(d), 10)) for d in dfAval]
 dfComplex = [fsub(fdiv(im(sin(mpc(x0, d))), d), mpf(trueVal)) for d in delta]
 logComplex = [float(log(d, 10)) for d in dfComplex]
 
-plt.plot(range(deepDel), logCentre, 'r--', logAval, 'bs', logComplex, 'g^')
+plt.plot(logCentre, 'rs', label="Centre")
+plt.plot(logAval, 'b.', label="Aval")
+plt.plot(logComplex, 'g^', label="Complex")
+plt.ylabel('log(erreur relative)')
+plt.xlabel('-log(delta)')
 plt.show()
