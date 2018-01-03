@@ -28,6 +28,8 @@ logComplex = np.log10(np.abs(dfComplex))
 plt.plot(logCentre, 'rs', label="Centre")
 plt.plot(logAval, 'b.', label="Aval")
 plt.plot(logComplex, 'g^', label="Complex")
+plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+           ncol=2, mode="expand", borderaxespad=0.)
 plt.ylabel('log(erreur relative)')
 plt.xlabel('-log(delta)')
 plt.show()
