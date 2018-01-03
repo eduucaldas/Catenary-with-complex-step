@@ -22,10 +22,10 @@ logCentre = np.log10(np.abs(dfCentre))
 logAval = np.log10(np.abs(dfAval))
 
 dfComplex = [np.imag(np.sin(x0 + d * 1j)) / d for d in delta] - trueVal
-logComplex = np.log(np.abs(dfComplex))
+logComplex = np.log10(np.abs(dfComplex))
 
 print(logCentre)
 print(logAval)
 print(logComplex)
-plt.plot(range(deepDel), logCentre, 'r--', logAval, 'bs', logComplex, 'g^')
+plt.plot(range(deepDel), logCentre, 'bs', logAval, 'r--', logComplex, 'g^')
 plt.show()
