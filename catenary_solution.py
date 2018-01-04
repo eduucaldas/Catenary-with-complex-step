@@ -7,7 +7,7 @@ from cmath import *
 
 class catenary:
 
-    def __init__(self, N=50, eps=0.001, L=sinh(0.5), alfa=0.001, delta=0.1 ** 10, a=0, b=0):
+    def __init__(self, eps=0.001, N=50, L=sinh(0.5), alfa=0.001, delta=0.1 ** 10, a=0, b=0):
         self.N = N
         self.h = 1. / (N - 1)
         self.eps = eps
@@ -42,11 +42,12 @@ class catenary:
         return Del
 
     def divJ(self, chain):
-        D = [0]
+        D = [0]  # fixed ends
 
         for i in range(1, len(chain) - 1):
             D.append(self.delJ(chain, i))
-        D.append(0)
+
+        D.append(0)  # fixed ends
         return D
 
     def evolution(self):
@@ -54,13 +55,33 @@ class catenary:
 
         self.solutions.append([s - d * (self.alfa / np.linalg.norm(D, 2)) for s, d in zip(self.solutions[-1], D)])
 
-    def plot(self):
+    def plot(self, k=-1):
         rangeX = [i * self.h for i in range(self.N)]
-        plt.plot(rangeX, self.solutions[-1], 'r-')
+        plt.plot(rangeX, self.solutions[k], 'r-')
+        if(k == -1 or k == self.N):
+            plt.title("Optimal Solution")
+        else:
+            plt.title("intermediate Solution #{}".format(k))
         plt.show()
 
-    def isCloseEnough(self):
-        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 0.00001 and len(self.solutions) * self.N > 1000):
+    def display_J(self):
+        rangeX = range(len(self.solutions))
+        plt.plot(rangeX, [self.J(s) for s in self.solutions], 'b-')
+        plt.title("Graph of J")
+        plt.show()
+
+    def display_energies(self):
+        rangeX = range(len(self.solutions))
+        plt.plot(rangeX, [self.energy(s) for s in self.solutions], 'b-', label="energy")
+        plt.plot(rangeX, [self.constraint_term(s) for s in self.solutions], 'r-', label="constraint")
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                   ncol=2, mode="expand", borderaxespad=0.)
+        plt.title("Graph of the Energies")
+        plt.show()
+
+    def isGoodEnough(self):
+        # stopping criteria: divJ close to zero but how much
+        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 10 or len(self.solutions) * self.N > 50000):
             return True
         else:
             return False
@@ -84,14 +105,21 @@ def test_divJ():
 
 
 def test_evolution():
-    cat = catenary()
-    count = 0
-    while not cat.isCloseEnough():
+    cat = catenary(0.01)
+    print(cat.eps)
+    # Evolving until stopping condition
+    while not cat.isGoodEnough():
         cat.evolution()
-        if(len(cat.solutions) % 100 == 0):
-            cat.plot()
+    # 10 intermediate solutions
+    for i in range(0, len(cat.solutions), int(len(cat.solutions) / 10)):
+        cat.plot(i)
+        print(np.linalg.norm(cat.divJ(cat.solutions[i])))
+    # final solution
     cat.plot()
 
+    print("Solutions Computed: ", len(cat.solutions))
+    cat.display_J()
+    cat.display_energies()
 
 
 # question6()
