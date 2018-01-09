@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from cmath import *
+import math
 
 # Initial parameters, gotta probs create a class
 
@@ -79,13 +80,12 @@ class catenary:
         plt.title("Graph of the Energies")
         plt.show()
 
-    def isGoodEnough(self):
+    def criteria(self):
         # stopping criteria: divJ close to zero but how much
-        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 10 or len(self.solutions) * self.N > 50000):
+        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 100*self.alfa*(1./self.eps) or len(self.solutions) * self.N > 50000):
             return True
         else:
             return False
-
 
 def question6():
     # not sure what she meant as real energy
@@ -105,13 +105,13 @@ def test_divJ():
 
 
 def test_evolution():
-    cat = catenary(0.01)
+    cat = catenary()
     print(cat.eps)
     # Evolving until stopping condition
-    while not cat.isGoodEnough():
+    while not cat.criteria():
         cat.evolution()
     # 10 intermediate solutions
-    for i in range(0, len(cat.solutions), int(len(cat.solutions) / 10)):
+    for i in range(0, len(cat.solutions), math.ceil(len(cat.solutions) / 10.)):
         cat.plot(i)
         print(np.linalg.norm(cat.divJ(cat.solutions[i])))
     # final solution
