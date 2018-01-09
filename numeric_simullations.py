@@ -25,9 +25,9 @@ dfComplex = [np.imag(np.sin(x0 + d * 1j)) / d for d in delta] - trueVal
 logComplex = np.log10(np.abs(dfComplex))
 
 
-plt.plot(logCentre, 'rs', label="Centre")
-plt.plot(logAval, 'b.', label="Aval")
-plt.plot(logComplex, 'g^', label="Complex")
+plt.plot(logCentre, 'rs', label="DF centrées")
+plt.plot(logAval, 'b.', label="DF aval")
+plt.plot(logComplex, 'g^', label="DF complexes")
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=2, mode="expand", borderaxespad=0.)
 plt.ylabel('log(erreur relative)')
