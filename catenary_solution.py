@@ -94,7 +94,6 @@ class catenary2(catenary):
         c2 = np.array(chain[:])
         c1[i] -= self.delta
         c2[i] += self.delta
-        print("entrou")
         Del = (self.J(c2) - self.J(c1)) / (2*self.delta)
         return float(Del)
     
