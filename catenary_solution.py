@@ -3,9 +3,21 @@ import matplotlib.pyplot as plt
 import cmath as cm
 import math
 
+# standard parameters:
+std_eps = 0.001
+std_N = 50
+std_L = 2 * math.sinh(0.5)
+std_alfa = 0.001
+std_delta = 0.1 ** 10
+std_a = 0
+std_b = 0
+std_chain0 = [-0.1 for i in range(std_N)]
+std_chain0[0] = std_a
+std_chain0[std_N - 1] = std_b
+
 
 class catenary:
-    def __init__(self, eps=0.001, N=50, L=2 * math.sinh(0.5), alfa=0.001, delta=0.1 ** 10, a=0, b=0):
+    def __init__(self, eps=std_eps, N=std_N, L=std_L, alfa=std_alfa, delta=std_delta, a=std_a, b=std_b):
         self.N = N
         self.h = 1. / (N - 1)
         self.eps = eps
@@ -14,10 +26,7 @@ class catenary:
         self.delta = delta
         self.a = a
         self.b = b
-        chain0 = [-0.1 for i in range(N)]
-        chain0[0] = a
-        chain0[N - 1] = b
-        self.solutions = [chain0]
+        self.solutions = [std_chain0]
 
     def energy(self, chain):
         v = np.array(chain[:- 1])
