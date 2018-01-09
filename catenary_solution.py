@@ -1,13 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from cmath import *
+import cmath as cm
 import math
 
 # Initial parameters, gotta probs create a class
 
 
 class catenary:
-
     def __init__(self, eps=0.001, N=50, L=sinh(0.5), alfa=0.001, delta=0.1 ** 10, a=0, b=0):
         self.N = N
         self.h = 1. / (N - 1)
@@ -24,14 +23,14 @@ class catenary:
 
     # we gotta have chain with the right length i.e. N
     def energy(self, chain):
-        v = chain[:- 1]
-        v_plus = chain[1:]
-        return self.h * np.sum([((j + j_plus) / 2.) * sqrt(1 + (((j_plus - j) / self.h) ** 2)) for j_plus, j in zip(v_plus, v)])
+        v = np.array(chain[:- 1])
+        v_plus = np.array(chain[1:])
+        return self.h * np.sum([((j + j_plus) / 2.) * cm.sqrt(1 + (((j_plus - j) / self.h)*((j_plus - j) / self.h))) for j_plus, j in zip(v_plus, v)])
 
     def constraint_term(self, chain):
-        v = chain[:- 1]
+        v = chain[:-1]
         v_plus = chain[1:]
-        return ((self.h * np.sum([sqrt(1 + (((j_plus - j) / self.h) ** 2)) for j_plus, j in zip(v_plus, v)]) - self.L) ** 2) / self.eps
+        return ((self.h * np.sum([cm.sqrt(1 + (((j_plus - j) / self.h) ** 2)) for j_plus, j in zip(v_plus, v)]) - self.L) ** 2) / self.eps
 
     def J(self, chain):
         return self.energy(chain) + self.constraint_term(chain)
@@ -40,7 +39,7 @@ class catenary:
         c = chain[:]
         c[i] += self.delta * 1j
         Del = np.imag(self.J(c)) / self.delta
-        return Del
+        return float(Del)
 
     def divJ(self, chain):
         D = [0]  # fixed ends
@@ -53,7 +52,7 @@ class catenary:
 
     def evolution(self):
         D = self.divJ(self.solutions[-1])
-
+        
         self.solutions.append([s - d * (self.alfa / np.linalg.norm(D, 2)) for s, d in zip(self.solutions[-1], D)])
 
     def plot(self, k=-1):
@@ -78,6 +77,8 @@ class catenary:
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
                    ncol=2, mode="expand", borderaxespad=0.)
         plt.title("Graph of the Energies")
+        plt.ylabel('energies')
+        plt.xlabel('iteration')
         plt.show()
 
     def criteria(self):
@@ -87,6 +88,16 @@ class catenary:
         else:
             return False
 
+class catenary2(catenary):
+    def delJ(self, chain, i):
+        c1 = np.array(chain[:])
+        c2 = np.array(chain[:])
+        c1[i] -= self.delta
+        c2[i] += self.delta
+        print("entrou")
+        Del = (self.J(c2) - self.J(c1)) / (2*self.delta)
+        return float(Del)
+    
 def question6():
     # not sure what she meant as real energy
     cat = catenary()
@@ -105,7 +116,7 @@ def test_divJ():
 
 
 def test_evolution():
-    cat = catenary()
+    cat = catenary2()
     print(cat.eps)
     # Evolving until stopping condition
     while not cat.criteria():
@@ -117,12 +128,13 @@ def test_evolution():
     # final solution
     cat.plot()
 
-    print("Solutions Computed: ", len(cat.solutions))
+    print("Solutions Computed: ", len(cat.solutions), "\nJ: ", cat.J(cat.solutions[-1]))
     cat.display_J()
     cat.display_energies()
 
 
-# question6()
-# test_delJ()
-# test_divJ()
+
+#question6()
+#test_delJ()
+#test_divJ()
 test_evolution()
