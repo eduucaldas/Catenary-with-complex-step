@@ -55,13 +55,7 @@ class catenary:
         return float(Del)
 
     def divJ(self, chain):
-        D = [0]  # fixed ends
-
-        # use list comprehension to make this quicker
-        for i in range(1, len(chain) - 1):
-            D.append(self.delJ(chain, i))
-
-        D.append(0)  # fixed ends
+        D = [0] + [self.delJ(chain, i) for i in range(1, len(chain)-1)] + [0]
         return D
 
     def evolution(self):
@@ -72,10 +66,10 @@ class catenary:
     def plot(self, k=-1):
         # plots a catenary that is in the vector of solutions
         rangeX = [i * self.h for i in range(self.N)]
-        plt.plot(rangeX, self.solutions[k], 'r-')
+        plt.plot(rangeX, self.solutions[k], 'r-', label="optimal")
 
         if(self.a == 0 and self.b == 0):
-            plt.plot(rangeX, self.solAnalytic, 'r--')
+            plt.plot(rangeX, self.solAnalytic, 'r--', label="analytic")
 
         if(k == -1 or k == len(self.solutions) - 1):
             plt.title("Optimal Solution #{}".format(len(self.solutions) - 1))
@@ -102,22 +96,23 @@ class catenary:
         plt.show()
 
     def stopConditionDiv(self):
-        # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
-        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 0.03 * self.alfa * (1 + 1. / self.eps) or len(self.solutions) > self.maxIt):
+        # stopping Condition: divJ close to zero. This will work if the function is k lipschitzian, which it is. But i couldnt estimate k, to do it.
+        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 20 * self.alfa * (0.1 + self.alfa / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
 
     def stopConditionDiff(self):
         # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
-        if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 9) / self.eps or len(self.solutions) > self.maxIt):
+        if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 11)*(1/self.eps)  or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
-
+        
+        
     def stopConditionCloseAnalytical(self):
         # stopping Condition: comparing with the analytical solution for the base case, used for testing
-        if(np.linalg.norm(np.array(self.solutions[-1]) - np.array(self.solAnalytic), 2) < math.sqrt(self.N) * self.alfa or len(self.solutions) > self.maxIt):
+        if(np.linalg.norm(np.array(self.solutions[-1]) - np.array(self.solAnalytic), 2) < math.sqrt(self.N) * self.alfa or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
@@ -188,14 +183,14 @@ def question7():
 
 def question9():
     # plots the evolution of the energies according to each epsilon
-    nEps = 5
-    logEpsInit = 2
+    nEps = 1
+    logEpsInit = 4
     cat = [catenary(0.1 ** i) for i in range(logEpsInit, logEpsInit + nEps)]
     for c in cat:
+        print("\n\nesp = {:.2E}".format(c.eps))
         c.evolve()
         c.display_energies()
-    for c in cat:
-        c.plot()
+
 
 
 def question10():
