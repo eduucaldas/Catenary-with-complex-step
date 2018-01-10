@@ -11,9 +11,10 @@ std_alfa = 0.001
 std_delta = 0.1 ** 10
 std_a = 0
 std_b = 0
-std_chain0 = [-0.1 for i in range(std_N)]
-std_chain0[0] = std_a
-std_chain0[std_N - 1] = std_b
+
+
+# maxIt so you don`t wait forever for the solution
+std_maxIt = 100000
 
 
 class catenary:
@@ -26,7 +27,12 @@ class catenary:
         self.delta = delta
         self.a = a
         self.b = b
+        std_chain0 = [-0.1 for i in range(self.N)]
+        std_chain0[0] = self.a
+        std_chain0[self.N - 1] = self.b
         self.solutions = [std_chain0]
+        self.maxIt = std_maxIt / self.N  # we dont want to wait forever
+        self.solAnalytic = [math.cosh(j * (1. / (self.N - 1)) - 0.5) - math.cosh(0.5) for j in range(self.N)]
 
     def energy(self, chain):
         v = np.array(chain[:- 1])
@@ -51,6 +57,7 @@ class catenary:
     def divJ(self, chain):
         D = [0]  # fixed ends
 
+        # use list comprehension to make this quicker
         for i in range(1, len(chain) - 1):
             D.append(self.delJ(chain, i))
 
@@ -66,8 +73,12 @@ class catenary:
         # plots a catenary that is in the vector of solutions
         rangeX = [i * self.h for i in range(self.N)]
         plt.plot(rangeX, self.solutions[k], 'r-')
-        if(k == -1 or k == self.N):
-            plt.title("Optimal Solution")
+
+        if(self.a == 0 and self.b == 0):
+            plt.plot(rangeX, self.solAnalytic, 'r--')
+
+        if(k == -1 or k == len(self.solutions) - 1):
+            plt.title("Optimal Solution #{}".format(len(self.solutions) - 1))
         else:
             plt.title("intermediate Solution #{}".format(k))
         plt.show()
@@ -90,16 +101,30 @@ class catenary:
         plt.xlabel('iteration')
         plt.show()
 
-    def stopCondition(self):
+    def stopConditionDiv(self):
         # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
-        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 0.03 * self.alfa * (1. / self.eps) or len(self.solutions) * self.N > 50000):
+        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 0.03 * self.alfa * (1 + 1. / self.eps) or len(self.solutions) > self.maxIt):
+            return True
+        else:
+            return False
+
+    def stopConditionDiff(self):
+        # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
+        if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 9) / self.eps or len(self.solutions) > self.maxIt):
+            return True
+        else:
+            return False
+
+    def stopConditionCloseAnalytical(self):
+        # stopping Condition: comparing with the analytical solution for the base case, used for testing
+        if(np.linalg.norm(np.array(self.solutions[-1]) - np.array(self.solAnalytic), 2) < math.sqrt(self.N) * self.alfa or len(self.solutions) > self.maxIt):
             return True
         else:
             return False
 
     def evolve(self):
         # evolving until finds stopCondition
-        while not self.stopCondition():
+        while not self.stopConditionDiff():  # change here the stopping condition
             self.evolution()
 
 
@@ -114,13 +139,6 @@ class catenary2(catenary):
         return float(Del)
 
 
-def question6():
-    # not sure what she meant with real energy
-    cat = catenary()
-    print("Energy = ", cat.energy(cat.solutions[0]))
-    print("J = ", cat.J(cat.solutions[0]))
-
-
 def test_delJ(cat):
     print([cat.delJ(cat.solutions[0], i) for i in range(cat.N)])
 
@@ -131,6 +149,7 @@ def test_divJ(cat):
 
 def test_evolution(cat):
     cat.evolve()
+    print(cat.eps)
     # 10 intermediate solutions
     for i in range(0, len(cat.solutions), math.ceil(len(cat.solutions) / 10.)):
         cat.plot(i)
@@ -139,8 +158,17 @@ def test_evolution(cat):
     cat.plot()
 
     print("Solutions Computed: ", len(cat.solutions), "\noptimized J: ", cat.J(cat.solutions[-1]))
+    if(cat.a == 0 and cat.b == 0):
+        print("J with analytical solution: {}".format(cat.J(cat.solAnalytic)))
     cat.display_J()
     cat.display_energies()
+
+
+def question6():
+    # not sure what she meant with real energy
+    cat = catenary()
+    print("Energy = ", cat.energy(cat.solutions[0]))
+    print("J = ", cat.J(cat.solutions[0]))
 
 
 def question7():
@@ -166,6 +194,8 @@ def question9():
     for c in cat:
         c.evolve()
         c.display_energies()
+    for c in cat:
+        c.plot()
 
 
 def question10():
@@ -192,11 +222,11 @@ def question10():
 
 # question6()
 # question7()
-# question9()
+question9()
 # question10()
 
 # these are for testing, catenary2 is the one with the real method
-# cat = catenary()
+# cat = catenary(alfa=0.0007, eps=0.0001)
 # cat = catenary2()
 # test_delJ(cat)
 # test_divJ(cat)
