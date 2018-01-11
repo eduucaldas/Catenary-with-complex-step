@@ -55,7 +55,7 @@ class catenary:
         return float(Del)
 
     def divJ(self, chain):
-        D = [0] + [self.delJ(chain, i) for i in range(1, len(chain)-1)] + [0]
+        D = [0] + [self.delJ(chain, i) for i in range(1, len(chain) - 1)] + [0]
         return D
 
     def evolution(self):
@@ -104,12 +104,11 @@ class catenary:
 
     def stopConditionDiff(self):
         # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
-        if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 11)*(1/self.eps)  or len(self.solutions) >= self.maxIt):
+        if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 11) * (1 / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
-        
-        
+
     def stopConditionCloseAnalytical(self):
         # stopping Condition: comparing with the analytical solution for the base case, used for testing
         if(np.linalg.norm(np.array(self.solutions[-1]) - np.array(self.solAnalytic), 2) < math.sqrt(self.N) * self.alfa or len(self.solutions) >= self.maxIt):
@@ -192,36 +191,35 @@ def question9():
         c.display_energies()
 
 
-
 def question10():
-    # Compares the two methods' solutions with the analytical solution
-    nDelta = 5  # how many times we`ll cahnge delta
-    logDeltaInit = 10
+    # Compares the two methods' solutions with the analytical solution for different values for delta
+    nDelta = 6  # how many times we`ll change delta
     N = 50
-
-    catComplex = [catenary(delta=0.1 ** i) for i in range(logDeltaInit, logDeltaInit + nDelta)]
-    catCentral = [catenary2(delta=0.1 ** i) for i in range(logDeltaInit, logDeltaInit + nDelta)]
+    deltas = [std_delta * (0.1 ** i) for i in range(nDelta)]
+    catComplex = [catenary(delta=d) for d in deltas]
+    catCentral = [catenary2(delta=d) for d in deltas]
     solAnalytic = [math.cosh(j * (1. / (N - 1)) - 0.5) - math.cosh(0.5) for j in range(N)]
     rangeX = [i * (1. / (N - 1)) for i in range(N)]
 
     for i in range(nDelta):
         catComplex[i].evolve()
         catCentral[i].evolve()
+        plt.title("Solutions with delta = {:.1E}".format(std_delta * (0.1 ** i)))
         plt.plot(rangeX, catComplex[i].solutions[-1], 'r-', label='complex')
         plt.plot(rangeX, catCentral[i].solutions[-1], 'b-', label='central')
         plt.plot(rangeX, solAnalytic, 'g--', label='analytical')
-        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc="best",
                    ncol=2, mode="expand", borderaxespad=0.)
         plt.show()
 
 
 # question6()
 # question7()
-question9()
-# question10()
+# question9()
+question10()
 
 # these are for testing, catenary2 is the one with the real method
-# cat = catenary(alfa=0.0007, eps=0.0001)
+# cat = catenary()
 # cat = catenary2()
 # test_delJ(cat)
 # test_divJ(cat)
