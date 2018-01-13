@@ -54,12 +54,12 @@ class catenary:
         Del = np.imag(self.J(c)) / self.delta
         return float(Del)
 
-    def divJ(self, chain):
+    def gradJ(self, chain):
         D = [0] + [self.delJ(chain, i) for i in range(1, len(chain) - 1)] + [0]
         return D
 
     def evolution(self):
-        D = self.divJ(self.solutions[-1])
+        D = self.gradJ(self.solutions[-1])
 
         self.solutions.append([s - d * (self.alfa / np.linalg.norm(D, 2)) for s, d in zip(self.solutions[-1], D)])
 
@@ -95,15 +95,15 @@ class catenary:
         plt.xlabel('iteration')
         plt.show()
 
-    def stopConditionDiv(self):
-        # stopping Condition: divJ close to zero. This will work if the function is k lipschitzian, which it is. But i couldnt estimate k, to do it.
-        if(np.linalg.norm(self.divJ(self.solutions[-1]), 2) < 20 * self.alfa * (0.1 + self.alfa / self.eps) or len(self.solutions) >= self.maxIt):
+    def stopConditionGrad(self):
+        # stopping Condition: gradJ close to zero. This will work if the function is k lipschitzian, which it is. But i couldnt estimate k, to do it.
+        if(np.linalg.norm(self.gradJ(self.solutions[-1]), 2) < 20 * self.alfa * (0.1 + self.alfa / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
 
     def stopConditionDiff(self):
-        # stopping Condition: divJ close to zero but how much? this 0.3 constant comes from where?
+        # stopping Condition: diff between energies calculated
         if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 11) * (1 / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
@@ -137,8 +137,8 @@ def test_delJ(cat):
     print([cat.delJ(cat.solutions[0], i) for i in range(cat.N)])
 
 
-def test_divJ(cat):
-    print(cat.divJ(cat.solutions[0]))
+def test_gradJ(cat):
+    print(cat.gradJ(cat.solutions[0]))
 
 
 def test_evolution(cat):
@@ -172,7 +172,7 @@ def question7():
     # 10 intermediate solutions
     for i in range(0, len(cat.solutions), math.ceil(len(cat.solutions) / 10.)):
         cat.plot(i)
-        print(np.linalg.norm(cat.divJ(cat.solutions[i])))
+        print(np.linalg.norm(cat.gradJ(cat.solutions[i])))
     # final solution
     cat.plot()
 
@@ -222,5 +222,5 @@ question10()
 # cat = catenary()
 # cat = catenary2()
 # test_delJ(cat)
-# test_divJ(cat)
+# test_gradJ(cat)
 # test_evolution(cat)
