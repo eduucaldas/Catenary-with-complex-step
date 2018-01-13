@@ -12,11 +12,17 @@ std_delta = 0.1 ** 10
 std_a = 0
 std_b = 0
 
+# if you want to change paramenters you can do it when creating the catenary, the default values are: N=50, alfa=0.1 ** 3, delta=0.1 ** 10, eps=0.1**3. You can change many other things as well just look at the __init__ method
+# This is how you change the parameters in any of these functions
+# cat = catenary(eps=eps, N=N, L=L, alfa=alfa, delta=delta, a=a, b=b)
+# or just change in the standards above
+
 
 # maxIt so you don`t wait forever for the solution
 std_maxIt = 100000
 
 
+# You shouldn't need to read the class implementation
 class catenary:
     def __init__(self, eps=std_eps, N=std_N, L=std_L, alfa=std_alfa, delta=std_delta, a=std_a, b=std_b):
         self.N = N
@@ -55,7 +61,7 @@ class catenary:
         return float(Del)
 
     def gradJ(self, chain):
-        D = [0] + [self.delJ(chain, i) for i in range(1, len(chain) - 1)] + [0]
+        D = [0] + [self.delJ(chain, i) for i in range(1, len(chain) - 1)] + [0]  # the borders are fixed
         return D
 
     def evolution(self):
@@ -81,6 +87,8 @@ class catenary:
         rangeX = range(len(self.solutions))
         plt.plot(rangeX, [self.J(s) for s in self.solutions], 'b-')
         plt.title("Graph of J")
+        plt.ylabel('J')
+        plt.xlabel('iteration')
         plt.show()
 
     def display_energies(self):
@@ -96,14 +104,14 @@ class catenary:
         plt.show()
 
     def stopConditionGrad(self):
-        # stopping Condition: gradJ close to zero. This will work if the function is k lipschitzian, which it is. But i couldnt estimate k, to do it.
+        # stopping Condition: gradJ close to zero. This will work if the function is k lipschitzian, which it is. But i couldnt estimate k to do it. Not used
         if(np.linalg.norm(self.gradJ(self.solutions[-1]), 2) < 20 * self.alfa * (0.1 + self.alfa / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
             return False
 
     def stopConditionDiff(self):
-        # stopping Condition: diff between energies calculated
+        # stopping Condition: difference between energies calculated
         if(len(self.solutions) > 1 and np.abs(self.J(self.solutions[-1]) - self.J(self.solutions[-2])) < (0.1 ** 11) * (1 / self.eps) or len(self.solutions) >= self.maxIt):
             return True
         else:
@@ -134,14 +142,15 @@ class catenary2(catenary):
 
 
 def test_delJ(cat):
-    print([cat.delJ(cat.solutions[0], i) for i in range(cat.N)])
+    print([cat.delJ(cat.solutions[-1], i) for i in range(cat.N)])
 
 
 def test_gradJ(cat):
-    print(cat.gradJ(cat.solutions[0]))
+    print(cat.gradJ(cat.solutions[-1]))
 
 
 def test_evolution(cat):
+    # this basically the same as asked in 7, used mainly for testing
     cat.evolve()
     print(cat.eps)
     # 10 intermediate solutions
@@ -182,8 +191,8 @@ def question7():
 
 def question9():
     # plots the evolution of the energies according to each epsilon
-    nEps = 1
-    logEpsInit = 4
+    nEps = 4    # number of eps youll test
+    logEpsInit = 2
     cat = [catenary(0.1 ** i) for i in range(logEpsInit, logEpsInit + nEps)]
     for c in cat:
         print("\n\nesp = {:.2E}".format(c.eps))
@@ -194,17 +203,18 @@ def question9():
 def question10():
     # Compares the two methods' solutions with the analytical solution for different values for delta
     nDelta = 6  # how many times we`ll change delta
+    dBegin = 2  # it takes a while to see the difference, you may want to set this to 2
     N = 50
-    deltas = [std_delta * (0.1 ** i) for i in range(nDelta)]
+    deltas = [std_delta * (0.1 ** i) for i in range(dBegin, nDelta)]
     catComplex = [catenary(delta=d) for d in deltas]
     catCentral = [catenary2(delta=d) for d in deltas]
     solAnalytic = [math.cosh(j * (1. / (N - 1)) - 0.5) - math.cosh(0.5) for j in range(N)]
     rangeX = [i * (1. / (N - 1)) for i in range(N)]
 
-    for i in range(nDelta):
+    for i in range(nDelta - dBegin):
         catComplex[i].evolve()
         catCentral[i].evolve()
-        plt.title("Solutions with delta = {:.1E}".format(std_delta * (0.1 ** i)))
+        plt.title("Solutions with delta = {:.1E}".format(deltas[i]))
         plt.plot(rangeX, catComplex[i].solutions[-1], 'r-', label='complex')
         plt.plot(rangeX, catCentral[i].solutions[-1], 'b-', label='central')
         plt.plot(rangeX, solAnalytic, 'g--', label='analytical')
