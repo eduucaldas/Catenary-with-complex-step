@@ -217,19 +217,22 @@ def question10():
         catComplex[i].evolve()
         catCentral[i].evolve()
         plt.title("Solutions with delta = {:.1E}".format(deltas[i]))
-        plt.plot(rangeX, catComplex[i].solutions[-1], 'r-', label='complex')
-        plt.plot(rangeX, catCentral[i].solutions[-1], 'b-', label='central')
-        plt.plot(rangeX, solAnalytic, 'g--', label='analytical')
-        plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc="best",
-                   ncol=2, mode="expand", borderaxespad=0.)
+        plt.plot(rangeX, catComplex[i].solutions[-1], 'r-', label='complexes')
+        plt.plot(rangeX, catCentral[i].solutions[-1], 'b-', label='centrées')
+        plt.plot(rangeX, solAnalytic, 'g--', label='analytique')
+        plt.legend(loc="best")
         plt.show()
 
         difComplex.append(np.linalg.norm(np.array(catComplex[i].solutions[-1]) - np.array(solAnalytic), 2))
         difCentral.append(np.linalg.norm(np.array(catCentral[i].solutions[-1]) - np.array(solAnalytic), 2))
 
+    plt.title("Erreur entre la solution analytique et les méthode de différences finies")
+    plt.ylabel('erreur')
+    plt.xlabel('-log($\delta$)')
     rangeX = -np.log10(deltas)
-    plt.plot(rangeX, difCentral, 'b-', label="central")
-    plt.plot(rangeX, difComplex, 'r-', label="complex")
+    plt.plot(rangeX, difCentral, 'b-', label="centrées")
+    plt.plot(rangeX, difComplex, 'r-', label="complexes")
+    plt.legend(loc="best")
     plt.show()
 
 
