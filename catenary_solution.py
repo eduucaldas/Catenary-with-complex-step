@@ -210,6 +210,8 @@ def question10():
     catCentral = [catenary2(delta=d) for d in deltas]
     solAnalytic = [math.cosh(j * (1. / (N - 1)) - 0.5) - math.cosh(0.5) for j in range(N)]
     rangeX = [i * (1. / (N - 1)) for i in range(N)]
+    difCentral = []
+    difComplex = []
 
     for i in range(nDelta - dBegin):
         catComplex[i].evolve()
@@ -221,6 +223,15 @@ def question10():
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc="best",
                    ncol=2, mode="expand", borderaxespad=0.)
         plt.show()
+
+        difComplex.append(np.linalg.norm(np.array(catComplex[i].solutions[-1]) - np.array(solAnalytic), 2))
+        difCentral.append(np.linalg.norm(np.array(catCentral[i].solutions[-1]) - np.array(solAnalytic), 2))
+
+    rangeX = -np.log10(deltas)
+    plt.plot(rangeX, difCentral, 'b-', label="central")
+    plt.plot(rangeX, difComplex, 'r-', label="complex")
+    plt.show()
+
 
 
 # question6()
